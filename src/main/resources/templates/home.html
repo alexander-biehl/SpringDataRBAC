@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>SpringDataRBAC</title>
+</head>
+<body>
+<h1>Welcome <span th:remove="tag" sec:authentication="name"></span>!</h1>
+
+    <form th:action="@{/login}" method="get">
+        <input type="submit" value="Sign in" />
+    </form>
+    <form th:action="@{/logout}" method="post">
+        <input type="submit" value="Sign Out" />
+    </form>
+</body>
+</html>
