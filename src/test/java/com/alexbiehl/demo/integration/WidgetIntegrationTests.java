@@ -48,7 +48,7 @@ public class WidgetIntegrationTests {
 
     @Test
     @WithMockUser
-    public void givenUserAndNote_delete_andFail() {
+    public void givenUserAndWidget_delete_andFail() {
         Widget widget = widgetRepository.findById(TestConstants.TEST_WIDGET_ID);
 
         AccessDeniedException ex = assertThrows(
@@ -61,7 +61,7 @@ public class WidgetIntegrationTests {
 
     @Test
     @WithMockUser
-    public void givenUserAndNote_deleteById_andFail() {
+    public void givenUserAndWidget_deleteById_andFail() {
         AccessDeniedException ex = assertThrows(
                 AccessDeniedException.class,
                 () -> widgetRepository.deleteById(TestConstants.TEST_WIDGET_ID),
@@ -72,7 +72,7 @@ public class WidgetIntegrationTests {
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
-    public void givenAdminAndNote_get_andOk() {
+    public void givenAdminAndWidget_get_andOk() {
         List<Widget> widgets = widgetRepository.findAll();
         assertNotNull(widgets);
         assertEquals(1, widgets.size());
@@ -81,7 +81,7 @@ public class WidgetIntegrationTests {
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
-    public void givenAdmin_postNote_andOk() {
+    public void givenAdmin_postWidget_andOk() {
         Widget newWidget = new Widget("testWidget", "test");
         newWidget = widgetRepository.save(newWidget);
         assertNotNull(newWidget.getId());
@@ -90,7 +90,7 @@ public class WidgetIntegrationTests {
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
-    public void givenAdmin_update_note_andOk() {
+    public void givenAdmin_updateWidget_andOk() {
         Widget w = widgetRepository.findById(TestConstants.TEST_WIDGET_ID);
         w.setDescription("Updated description");
         widgetRepository.save(w);
@@ -100,7 +100,7 @@ public class WidgetIntegrationTests {
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
-    public void givenAdmin_deleteNote_andOk() {
+    public void givenAdmin_deleteWidget_andOk() {
         widgetRepository.delete(widgetRepository.findById(TestConstants.TEST_WIDGET_ID));
         assertNull(widgetRepository.findById(TestConstants.TEST_WIDGET_ID));
     }

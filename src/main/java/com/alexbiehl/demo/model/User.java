@@ -7,11 +7,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+public class User extends DBItemBase {
 
     @Column(length = 50, nullable = false)
     private String username;
@@ -32,27 +28,21 @@ public class User {
     private Set<Role> roles;
 
     public User() {
+        super();
     }
 
     public User(long id, String username, String password, boolean enabled) {
-        this.id = id;
+        super(id);
         this.username = username;
         this.password = password;
         this.enabled = enabled;
     }
 
     public User(String username, String password, boolean enabled) {
+        super();
         this.username = username;
         this.password = password;
         this.enabled = enabled;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getUsername() {

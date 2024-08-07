@@ -6,11 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-public class Widget {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+public class Widget extends DBItemBase {
 
     private String shortDescription;
     private String description;
@@ -24,25 +20,19 @@ public class Widget {
     private Set<Location> availableLocations;
 
     public Widget() {
+        super();
     }
 
     public Widget(long id, String shortDescription, String description) {
-        this.id = id;
+        super(id);
         this.shortDescription = shortDescription;
         this.description = description;
     }
 
     public Widget(String shortDescription, String description) {
+        super();
         this.shortDescription = shortDescription;
         this.description = description;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getShortDescription() {

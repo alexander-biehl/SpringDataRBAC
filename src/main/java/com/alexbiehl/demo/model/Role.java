@@ -6,32 +6,24 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
 @Table(name = "roles")
-public class Role {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+public class Role extends DBItemBase {
 
     @Column(nullable = false)
     private String name;
 
-    private Role() {}
+    private Role() {
+        super();
+    }
 
     public Role(long id, String name) {
+        super(id);
         this.id = id;
         this.name = name;
     }
 
     public Role(String name) {
+        super();
         this.name = name;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getName() {

@@ -1,18 +1,11 @@
 package com.alexbiehl.demo.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 import java.util.Objects;
 
 @Entity
-public class Location {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+public class Location extends DBItemBase {
 
     private String name;
     private String description;
@@ -23,9 +16,11 @@ public class Location {
     private String country;
 
     public Location() {
+        super();
     }
 
     public Location(long id, String name, String description, String streetAddress, String city, String state, String zipcode, String country) {
+        super(id);
         this.id = id;
         this.name = name;
         this.description = description;
@@ -37,6 +32,7 @@ public class Location {
     }
 
     public Location(String name, String description, String streetAddress, String city, String state, String zipcode, String country) {
+        super();
         this.name = name;
         this.description = description;
         this.streetAddress = streetAddress;
@@ -44,14 +40,6 @@ public class Location {
         this.state = state;
         this.zipcode = zipcode;
         this.country = country;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getName() {
