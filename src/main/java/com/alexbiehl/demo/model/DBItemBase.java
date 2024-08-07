@@ -57,6 +57,22 @@ public abstract class DBItemBase {
         return updatedOn;
     }
 
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public void setCreatedOn(Timestamp createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public void setUpdatedOn(Timestamp updatedOn) {
+        this.updatedOn = updatedOn;
+    }
+
     // for testing
     public void setId(long id) {
         this.id = id;
