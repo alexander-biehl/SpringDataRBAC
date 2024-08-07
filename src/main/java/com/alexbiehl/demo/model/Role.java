@@ -16,7 +16,7 @@ public class Role extends DBItemBase {
     @JoinColumn(name = "parent_id")
     private Role parent;
 
-    private Role() {
+    public Role() {
         super();
     }
 

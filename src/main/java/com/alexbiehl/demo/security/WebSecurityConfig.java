@@ -1,11 +1,15 @@
 package com.alexbiehl.demo.security;
 
+import com.alexbiehl.demo.model.Role;
+import com.alexbiehl.demo.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.acls.AclPermissionCacheOptimizer;
 import org.springframework.security.acls.AclPermissionEvaluator;
 import org.springframework.security.acls.domain.*;
@@ -33,6 +37,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -41,6 +48,9 @@ public class WebSecurityConfig {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    private RoleService roleService;
 
     @Autowired
     private DataSource dataSource;
@@ -84,6 +94,23 @@ public class WebSecurityConfig {
         return authProvider;
     }
 
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("MANAGER")
+                .role("MANAGER").implies("USER")
+                .build();
+//        RoleHierarchyImpl.Builder builder = RoleHierarchyImpl.withDefaultRolePrefix();
+//        Map<Role, Set<Role>> roleMap = roleService.getRoleHierarchy();
+//        roleMap.forEach((key, value) -> builder
+//                .role(key.getName())
+//                .implies(value
+//                        .stream()
+//                        .map(Role::getName)
+//                        .collect(Collectors.joining())));
+//        return builder.build();
+    }
+
     // ACL-related beans
 
     @Bean
@@ -113,6 +140,7 @@ public class WebSecurityConfig {
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         AclPermissionEvaluator permissionEvaluator = new AclPermissionEvaluator(mutableAclService());
+        expressionHandler.setRoleHierarchy(roleHierarchy());
         expressionHandler.setPermissionEvaluator(permissionEvaluator);
         expressionHandler.setPermissionCacheOptimizer(new AclPermissionCacheOptimizer(mutableAclService()));
         return expressionHandler;

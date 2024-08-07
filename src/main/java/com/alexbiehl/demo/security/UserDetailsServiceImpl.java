@@ -33,6 +33,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         LOGGER.info("Found user with username: {}", username);
+        LOGGER.info("Authorities: {}:", getAuthorities(user.getRoles()).toString());
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

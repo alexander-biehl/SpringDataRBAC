@@ -30,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.swing.plaf.basic.BasicEditorPaneUI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -85,11 +86,11 @@ public class DataSourceLoader implements InitializingBean {
 
         Role userRole = new Role("ROLE_USER");
         userRole = roleRepository.save(userRole);
-        // Role managerRole = new Role("ROLE_MANAGER", userRole);
-        Role managerRole = new Role("ROLE_MANAGER");
+        Role managerRole = new Role("ROLE_MANAGER", userRole);
+        // Role managerRole = new Role("ROLE_MANAGER");
         managerRole = roleRepository.save(managerRole);
-        // Role adminRole = new Role("ROLE_ADMIN", managerRole);
-        Role adminRole = new Role("ROLE_ADMIN");
+        Role adminRole = new Role("ROLE_ADMIN", managerRole);
+        // Role adminRole = new Role("ROLE_ADMIN");
         adminRole = roleRepository.save(adminRole);
 
 
@@ -149,6 +150,40 @@ public class DataSourceLoader implements InitializingBean {
         // user role has read access for now, admin will have all access
         AtomicInteger widgetOrder = new AtomicInteger(0);
         AtomicInteger locOrder = new AtomicInteger(0);
+
+
+        // user role permissions
+        persistPermissions(
+                widgetAdminIdentity,
+                widgetOrder,
+                userRoleSid,
+                List.of(BasePermission.READ.getMask()),
+                List.of(true)
+        );
+        persistPermissions(
+                locationAdminIdentity,
+                locOrder,
+                userRoleSid,
+                List.of(BasePermission.READ.getMask()),
+                List.of(true)
+        );
+
+        // manager role permissions
+        persistPermissions(
+                widgetAdminIdentity,
+                widgetOrder,
+                managerRoleSid,
+                Arrays.asList(BasePermission.CREATE.getMask(), BasePermission.WRITE.getMask()),
+                Arrays.asList(true, true)
+        );
+        persistPermissions(
+                locationAdminIdentity,
+                locOrder,
+                managerRoleSid,
+                Arrays.asList(BasePermission.CREATE.getMask(), BasePermission.WRITE.getMask()),
+                Arrays.asList(true, true)
+        );
+
         // admin acl entries
         List<Integer> pList = Arrays.asList(
                 BasePermission.READ.getMask(),
@@ -161,31 +196,15 @@ public class DataSourceLoader implements InitializingBean {
                 widgetAdminIdentity,
                 widgetOrder,
                 adminRoleSid,
-                pList,
-                Arrays.asList(true, true, true, true, true)
+                Arrays.asList(BasePermission.DELETE.getMask(), BasePermission.ADMINISTRATION.getMask()),
+                Arrays.asList(true, true)
         );
         persistPermissions(
                 locationAdminIdentity,
                 locOrder,
                 adminRoleSid,
-                pList,
-                Arrays.asList(true, true, true, true, true)
-        );
-
-        // user role permissions
-        persistPermissions(
-                widgetAdminIdentity,
-                widgetOrder,
-                userRoleSid,
-                pList,
-                Arrays.asList(true, false, false, false, false)
-        );
-        persistPermissions(
-                locationAdminIdentity,
-                locOrder,
-                userRoleSid,
-                pList,
-                Arrays.asList(true, false, false, false, false)
+                Arrays.asList(BasePermission.DELETE.getMask(), BasePermission.ADMINISTRATION.getMask()),
+                Arrays.asList(true, true)
         );
 
         LOGGER.info("DB Load Complete");
