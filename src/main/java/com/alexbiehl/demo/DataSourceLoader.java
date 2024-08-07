@@ -32,7 +32,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class DataSourceLoader implements InitializingBean {
@@ -145,181 +147,71 @@ public class DataSourceLoader implements InitializingBean {
 
         // Create the ACL entries for each domain object, Sid, and permission
         // user role has read access for now, admin will have all access
-        int widgetOrder = 0;
-        int locOrder = 0;
+        AtomicInteger widgetOrder = new AtomicInteger(0);
+        AtomicInteger locOrder = new AtomicInteger(0);
         // admin acl entries
+        List<Integer> pList = Arrays.asList(
+                BasePermission.READ.getMask(),
+                BasePermission.CREATE.getMask(),
+                BasePermission.WRITE.getMask(),
+                BasePermission.DELETE.getMask(),
+                BasePermission.ADMINISTRATION.getMask());
 
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        adminRoleSid,
-                        BasePermission.READ.getMask()
-                )
+        persistPermissions(
+                widgetAdminIdentity,
+                widgetOrder,
+                adminRoleSid,
+                pList,
+                Arrays.asList(true, true, true, true, true)
         );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        adminRoleSid,
-                        BasePermission.CREATE.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        adminRoleSid,
-                        BasePermission.WRITE.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        adminRoleSid,
-                        BasePermission.DELETE.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        adminRoleSid,
-                        BasePermission.ADMINISTRATION.getMask()
-                )
-        );
-
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        adminRoleSid,
-                        BasePermission.READ.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        adminRoleSid,
-                        BasePermission.CREATE.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        adminRoleSid,
-                        BasePermission.WRITE.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        adminRoleSid,
-                        BasePermission.DELETE.getMask()
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        adminRoleSid,
-                        BasePermission.ADMINISTRATION.getMask()
-                )
+        persistPermissions(
+                locationAdminIdentity,
+                locOrder,
+                adminRoleSid,
+                pList,
+                Arrays.asList(true, true, true, true, true)
         );
 
         // user role permissions
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        userRoleSid,
-                        BasePermission.READ.getMask()));
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        userRoleSid,
-                        BasePermission.CREATE.getMask(),
-                        false
-                )
+        persistPermissions(
+                widgetAdminIdentity,
+                widgetOrder,
+                userRoleSid,
+                pList,
+                Arrays.asList(true, false, false, false, false)
         );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        userRoleSid,
-                        BasePermission.WRITE.getMask(),
-                        false
-                )
-        );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        userRoleSid,
-                        BasePermission.DELETE.getMask(),
-                        false
-                )
-        );
-        saveEntry(
-                createEntry(
-                        widgetAdminIdentity,
-                        widgetOrder++,
-                        userRoleSid,
-                        BasePermission.ADMINISTRATION.getMask(),
-                        false
-                )
-        );
-
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        userRoleSid,
-                        BasePermission.READ.getMask()));
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        userRoleSid,
-                        BasePermission.CREATE.getMask(),
-                        false
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        userRoleSid,
-                        BasePermission.WRITE.getMask(),
-                        false
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        userRoleSid,
-                        BasePermission.DELETE.getMask(),
-                        false
-                )
-        );
-        saveEntry(
-                createEntry(
-                        locationAdminIdentity,
-                        locOrder++,
-                        userRoleSid,
-                        BasePermission.ADMINISTRATION.getMask(),
-                        false
-                )
+        persistPermissions(
+                locationAdminIdentity,
+                locOrder,
+                userRoleSid,
+                pList,
+                Arrays.asList(true, false, false, false, false)
         );
 
         LOGGER.info("DB Load Complete");
         SecurityContextHolder.clearContext();
+    }
+
+    private void persistPermissions(
+            AclObjectIdentity oid,
+            AtomicInteger order,
+            AclSid sid,
+            List<Integer> permissions,
+            List<Boolean> grants) {
+        Iterator<Integer> pIter = permissions.listIterator();
+        Iterator<Boolean> gIter = grants.listIterator();
+
+        while (pIter.hasNext() && gIter.hasNext()) {
+            saveEntry(
+                    createEntry(
+                            oid,
+                            order.getAndIncrement(),
+                            sid,
+                            pIter.next(),
+                            gIter.next()
+                    )
+            );
+        }
     }
 
     private void saveEntry(AclEntry entry) {
@@ -349,4 +241,6 @@ public class DataSourceLoader implements InitializingBean {
                 true
         );
     }
+
+
 }
