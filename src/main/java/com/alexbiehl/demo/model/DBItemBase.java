@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 @MappedSuperclass
 public abstract class DBItemBase {
@@ -71,6 +72,21 @@ public abstract class DBItemBase {
 
     public void setUpdatedOn(Timestamp updatedOn) {
         this.updatedOn = updatedOn;
+    }
+
+    @PrePersist
+    public void afterSave() {
+        Timestamp updated = Timestamp.from(Instant.now());
+        setUpdatedOn(updated);
+        setCreatedOn(updated);
+        setCreatedBy("system");
+        setUpdatedBy("system");
+    }
+
+    @PreUpdate
+    public void afterUpdate() {
+        setUpdatedOn(Timestamp.from(Instant.now()));
+        setUpdatedBy("system");
     }
 
     // for testing
