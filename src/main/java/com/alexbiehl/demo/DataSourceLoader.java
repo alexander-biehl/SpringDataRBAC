@@ -80,8 +80,8 @@ public class DataSourceLoader implements InitializingBean {
         User user = new User("user", passwordEncoder.encode("password"), true);
         User admin = new User("admin", passwordEncoder.encode("password"), true);
         Role userRole = new Role("ROLE_USER");
-        Role managerRole = new Role("ROLE_MANAGER", userRole);
-        Role adminRole = new Role("ROLE_ADMIN", managerRole);
+        Role managerRole = new Role("ROLE_MANAGER");
+        Role adminRole = new Role("ROLE_ADMIN");
 
         userRole = roleRepository.save(userRole);
         managerRole = roleRepository.save(managerRole);
