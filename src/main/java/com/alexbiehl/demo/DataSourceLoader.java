@@ -78,27 +78,34 @@ public class DataSourceLoader implements InitializingBean {
         // Create roles and users
 
         User user = new User("user", passwordEncoder.encode("password"), true);
+        User manager = new User("manager", passwordEncoder.encode("password"), true);
         User admin = new User("admin", passwordEncoder.encode("password"), true);
-        Role userRole = new Role("ROLE_USER");
-        Role managerRole = new Role("ROLE_MANAGER");
-        Role adminRole = new Role("ROLE_ADMIN");
 
+        Role userRole = new Role("ROLE_USER");
         userRole = roleRepository.save(userRole);
+        // Role managerRole = new Role("ROLE_MANAGER", userRole);
+        Role managerRole = new Role("ROLE_MANAGER");
         managerRole = roleRepository.save(managerRole);
+        // Role adminRole = new Role("ROLE_ADMIN", managerRole);
+        Role adminRole = new Role("ROLE_ADMIN");
         adminRole = roleRepository.save(adminRole);
 
+
         user.setRoles(Collections.singleton(userRole));
-        // admin.setRoles(new HashSet<>(Arrays.asList(userRole, adminRole)));
+        manager.setRoles(Collections.singleton(managerRole));
         admin.setRoles(Collections.singleton(adminRole));
 
         user = userRepository.save(user);
+        manager = userRepository.save(manager);
         admin = userRepository.save(admin);
 
         // create Security IDentifiers (ACL SID)
         AclSid userRoleSid = new AclSid(false, userRole.getName());
+        AclSid managerRoleSid = new AclSid(false, managerRole.getName());
         AclSid adminRoleSid = new AclSid(false, adminRole.getName());
 
         userRoleSid = aclSidRepository.save(userRoleSid);
+        managerRoleSid = aclSidRepository.save(managerRoleSid);
         adminRoleSid = aclSidRepository.save(adminRoleSid);
 
         AclClass widgetClass = new AclClass("com.alexbiehl.demo.model.Widget");
@@ -132,25 +139,9 @@ public class DataSourceLoader implements InitializingBean {
                 adminRoleSid,
                 false
         );
-//        AclObjectIdentity widgetUserIdentity = new AclObjectIdentity(
-//                widgetClass,
-//                String.valueOf(widget.getId()),
-//                null,
-//                userRoleSid,
-//                false
-//        );
-//        AclObjectIdentity locationUserIdentity = new AclObjectIdentity(
-//                locationClass,
-//                String.valueOf(loc.getId()),
-//                null,
-//                userRoleSid,
-//                false
-//        );
 
         widgetAdminIdentity = aclObjectIdentityRepository.save(widgetAdminIdentity);
         locationAdminIdentity = aclObjectIdentityRepository.save(locationAdminIdentity);
-//        widgetUserIdentity = aclObjectIdentityRepository.save(widgetUserIdentity);
-//        locationUserIdentity = aclObjectIdentityRepository.save(locationUserIdentity);
 
         // Create the ACL entries for each domain object, Sid, and permission
         // user role has read access for now, admin will have all access
