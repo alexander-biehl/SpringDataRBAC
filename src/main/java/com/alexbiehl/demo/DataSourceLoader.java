@@ -81,10 +81,12 @@ public class DataSourceLoader implements InitializingBean {
         User admin = new User("admin", passwordEncoder.encode("password"), true);
         Role userRole = new Role("ROLE_USER");
         Role adminRole = new Role("ROLE_ADMIN");
-        user.setRoles(Collections.singleton(userRole));
-        admin.setRoles(new HashSet<>(Arrays.asList(userRole, adminRole)));
+
         userRole = roleRepository.save(userRole);
         adminRole = roleRepository.save(adminRole);
+
+        user.setRoles(Collections.singleton(userRole));
+        admin.setRoles(new HashSet<>(Arrays.asList(userRole, adminRole)));
 
         user = userRepository.save(user);
         admin = userRepository.save(admin);
@@ -105,7 +107,7 @@ public class DataSourceLoader implements InitializingBean {
         Widget widget = new Widget(-1L, "testWidget", "desc");
         // Widget widget2 = new Widget(2L, "widget2", "desc2");
 
-        Location loc = new Location(1L, "Home", "the pad", "1810 27th ave", "Astoria", "NY", "11102", "USA");
+        Location loc = new Location(1L, "Home", "the pad", "100 Some st.", "Anytown", "NY", "00000", "USA");
         widget.setAvailableLocations(Collections.singleton(loc));
         // widget2.setAvailableLocations(Collections.singleton(loc));
 
