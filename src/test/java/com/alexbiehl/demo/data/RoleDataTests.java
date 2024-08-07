@@ -11,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,5 +75,18 @@ public class RoleDataTests {
 
         children = repo.findByParentId(savedUserRole.getId());
         assertEquals(0, children.size());
+    }
+
+    @Test
+    public void testGetAllParentRoles() {
+        Role userRole = new Role("ROLE_USER");
+        Role adminRole = new Role("ROLE_ADMIN", userRole);
+        Role singleRole = new Role("ROLE_SINGLE");
+        repo.saveAllAndFlush(Arrays.asList(singleRole, userRole, adminRole));
+
+        Set<Role> parentRoles = repo.findParentRoles();
+        assertNotNull(parentRoles);
+        assertEquals(1, parentRoles.size());
+        assertEquals(userRole.getName(), parentRoles.iterator().next().getName());
     }
 }
