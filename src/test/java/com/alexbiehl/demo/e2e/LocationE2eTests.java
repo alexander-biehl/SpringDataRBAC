@@ -34,7 +34,7 @@ public class LocationE2eTests {
     @LocalServerPort
     private int port;
     @Autowired
-    private LocationRepository locaRepository;
+    private LocationRepository locRepository;
 
     @Test
     public void adminCreateLoc_userRead_andOk() {
