@@ -1,8 +1,10 @@
 package com.alexbiehl.demo.repository.eventhandler;
 
 import com.alexbiehl.demo.model.Widget;
+import com.alexbiehl.demo.service.AclService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
@@ -16,6 +18,9 @@ import java.util.Date;
 
 @RepositoryEventHandler
 public class WidgetEventHandler {
+
+    @Autowired
+    private AclService aclService;
 
     private static final Logger log = LoggerFactory.getLogger(WidgetEventHandler.class);
 
