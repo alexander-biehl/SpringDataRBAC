@@ -151,40 +151,6 @@ public class DataSourceLoader implements InitializingBean {
         AtomicInteger widgetOrder = new AtomicInteger(0);
         AtomicInteger locOrder = new AtomicInteger(0);
 
-
-        // user role permissions
-        persistPermissions(
-                widgetAdminIdentity,
-                widgetOrder,
-                userRoleSid,
-                List.of(BasePermission.READ.getMask()),
-                List.of(true)
-        );
-        persistPermissions(
-                locationAdminIdentity,
-                locOrder,
-                userRoleSid,
-                List.of(BasePermission.READ.getMask()),
-                List.of(true)
-        );
-
-        // manager role permissions
-        persistPermissions(
-                widgetAdminIdentity,
-                widgetOrder,
-                managerRoleSid,
-                Arrays.asList(BasePermission.CREATE.getMask(), BasePermission.WRITE.getMask()),
-                Arrays.asList(true, true)
-        );
-        persistPermissions(
-                locationAdminIdentity,
-                locOrder,
-                managerRoleSid,
-                Arrays.asList(BasePermission.CREATE.getMask(), BasePermission.WRITE.getMask()),
-                Arrays.asList(true, true)
-        );
-
-        // admin acl entries
         List<Integer> pList = Arrays.asList(
                 BasePermission.READ.getMask(),
                 BasePermission.CREATE.getMask(),
@@ -192,19 +158,53 @@ public class DataSourceLoader implements InitializingBean {
                 BasePermission.DELETE.getMask(),
                 BasePermission.ADMINISTRATION.getMask());
 
+        // user role permissions
+        persistPermissions(
+                widgetAdminIdentity,
+                widgetOrder,
+                userRoleSid,
+                pList,
+                List.of(true, false, false, false, false)
+        );
+        persistPermissions(
+                locationAdminIdentity,
+                locOrder,
+                userRoleSid,
+                pList,
+                List.of(true, false, false, false, false)
+        );
+
+        // manager role permissions
+        persistPermissions(
+                widgetAdminIdentity,
+                widgetOrder,
+                managerRoleSid,
+                pList,
+                List.of(true, true, true, false, false)
+        );
+        persistPermissions(
+                locationAdminIdentity,
+                locOrder,
+                managerRoleSid,
+                pList,
+                List.of(true, true, true, false, false)
+        );
+
+        // admin acl entries
+
         persistPermissions(
                 widgetAdminIdentity,
                 widgetOrder,
                 adminRoleSid,
-                Arrays.asList(BasePermission.DELETE.getMask(), BasePermission.ADMINISTRATION.getMask()),
-                Arrays.asList(true, true)
+                pList,
+                List.of(true, true, true, true, true)
         );
         persistPermissions(
                 locationAdminIdentity,
                 locOrder,
                 adminRoleSid,
-                Arrays.asList(BasePermission.DELETE.getMask(), BasePermission.ADMINISTRATION.getMask()),
-                Arrays.asList(true, true)
+                pList,
+                List.of(true, true, true, true, true)
         );
 
         LOGGER.info("DB Load Complete");
