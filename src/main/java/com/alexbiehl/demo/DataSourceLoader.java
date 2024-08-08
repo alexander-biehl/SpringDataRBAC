@@ -8,10 +8,7 @@ import com.alexbiehl.demo.model.security.AclClass;
 import com.alexbiehl.demo.model.security.AclEntry;
 import com.alexbiehl.demo.model.security.AclObjectIdentity;
 import com.alexbiehl.demo.model.security.AclSid;
-import com.alexbiehl.demo.repository.LocationRepository;
-import com.alexbiehl.demo.repository.RoleRepository;
-import com.alexbiehl.demo.repository.UserRepository;
-import com.alexbiehl.demo.repository.WidgetRepository;
+import com.alexbiehl.demo.repository.*;
 import com.alexbiehl.demo.repository.security.AclClassRepository;
 import com.alexbiehl.demo.repository.security.AclEntryRepository;
 import com.alexbiehl.demo.repository.security.AclObjectIdentityRepository;
@@ -48,6 +45,8 @@ public class DataSourceLoader implements InitializingBean {
     private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private GrantRepository grantRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -111,9 +110,11 @@ public class DataSourceLoader implements InitializingBean {
         managerRoleSid = aclSidRepository.save(managerRoleSid);
         adminRoleSid = aclSidRepository.save(adminRoleSid);
 
+        AclClass baseClass = new AclClass("com.alexbiehl.demo.model.DBItemBase");
         AclClass widgetClass = new AclClass("com.alexbiehl.demo.model.Widget");
         AclClass locationClass = new AclClass("com.alexbiehl.demo.model.Location");
 
+        baseClass = aclClassRepository.save(baseClass);
         widgetClass = aclClassRepository.save(widgetClass);
         locationClass = aclClassRepository.save(locationClass);
 
@@ -129,20 +130,37 @@ public class DataSourceLoader implements InitializingBean {
         // widget2 = widgetRepository.save(widget2);
 
         // Create ACL Object Identities
+//        AclObjectIdentity widgetParentIdentity = new AclObjectIdentity(
+//                baseClass,
+//                String.valueOf(widget.getId()),
+//                null,
+//                userRoleSid,
+//                true
+//        );
+//        AclObjectIdentity locParentIdentity = new AclObjectIdentity(
+//                baseClass,
+//                String.valueOf(loc.getId()),
+//                null,
+//                userRoleSid,
+//                true
+//        );
         AclObjectIdentity widgetAdminIdentity = new AclObjectIdentity(
                 widgetClass,
                 String.valueOf(widget.getId()),
+                // widgetParentIdentity,
                 null,
                 adminRoleSid,
-                false);
+                true);
         AclObjectIdentity locationAdminIdentity = new AclObjectIdentity(
                 locationClass,
                 String.valueOf(loc.getId()),
+                // locParentIdentity,
                 null,
                 adminRoleSid,
-                false
+                true
         );
 
+        // aclObjectIdentityRepository.saveAll(List.of(widgetParentIdentity, locParentIdentity));
         widgetAdminIdentity = aclObjectIdentityRepository.save(widgetAdminIdentity);
         locationAdminIdentity = aclObjectIdentityRepository.save(locationAdminIdentity);
 

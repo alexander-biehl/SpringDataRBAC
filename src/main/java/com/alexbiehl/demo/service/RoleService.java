@@ -5,10 +5,7 @@ import com.alexbiehl.demo.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class RoleService {
@@ -35,6 +32,18 @@ public class RoleService {
         // get all leaf nodes, for each node, recursively walk up the chain
         // and DepthFirst then add them to the list
         Map<Role, List<Role>> hierarchy = new HashMap<>();
+        Set<Role> leafRoles = repository.findLeafRoles();
+        leafRoles.forEach(role -> {
+            List<Role> roleHierarchy = new ArrayList<>();
+            roleHierarchy = getHierarchy(roleHierarchy, role);
+            hierarchy.put(roleHierarchy.getFirst(), roleHierarchy);
+        });
         return hierarchy;
+    }
+
+    private List<Role> getHierarchy(List<Role> roleList, Role role) {
+        roleList = getHierarchy(roleList, repository.getReferenceById(role.getParent().getId()));
+        roleList.add(role);
+        return roleList;
     }
 }
