@@ -25,6 +25,7 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     @Query(
             value = """
                     SELECT * FROM roles r0 WHERE r0.`parent_id` IS NOT NULL AND r0.`id` NOT IN (
+                        :
                         SELECT DISTINCT `parent_id` FROM roles r1 WHERE r1.`parent_id` IS NOT NULL)
                     """,
             nativeQuery = true
