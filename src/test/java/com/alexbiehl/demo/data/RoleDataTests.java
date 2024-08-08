@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,5 +89,18 @@ public class RoleDataTests {
         assertNotNull(parentRoles);
         assertEquals(1, parentRoles.size());
         assertEquals(userRole.getName(), parentRoles.iterator().next().getName());
+    }
+
+    @Test
+    public void testGetLeafRoles() {
+        Role treeRole = new Role("ROLE_TREE");
+        Role branchRole = new Role("ROLE_BRANCH", treeRole);
+        Role leafRole = new Role("ROLE_LEAF", branchRole);
+        repo.saveAllAndFlush(List.of(leafRole, branchRole, treeRole));
+
+        Set<Role> leaves = repo.findLeafRoles();
+        assertNotNull(leaves);
+        assertEquals(1, leaves.size());
+        assertEquals(leafRole.getName(), leaves.iterator().next().getName());
     }
 }
