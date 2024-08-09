@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class AclClass {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(nullable = false, name = "class", unique = true)
