@@ -1,7 +1,6 @@
 package com.alexbiehl.demo;
 
 import com.alexbiehl.demo.model.*;
-import com.alexbiehl.demo.model.security.AclClass;
 import com.alexbiehl.demo.model.security.AclEntry;
 import com.alexbiehl.demo.model.security.AclObjectIdentity;
 import com.alexbiehl.demo.model.security.AclSid;
@@ -11,12 +10,11 @@ import com.alexbiehl.demo.repository.security.AclEntryRepository;
 import com.alexbiehl.demo.repository.security.AclObjectIdentityRepository;
 import com.alexbiehl.demo.repository.security.AclSidRepository;
 import com.alexbiehl.demo.service.GrantService;
-import com.alexbiehl.demo.service.SecurityPopulator;
+import com.alexbiehl.demo.service.SecurityMetaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.acls.domain.BasePermission;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,8 +25,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.plaf.basic.BasicEditorPaneUI;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -72,7 +68,7 @@ public class DataSourceLoader implements InitializingBean {
     private AclSidRepository aclSidRepository;
 
     @Autowired
-    private SecurityPopulator secPop;
+    private SecurityMetaService metaService;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -147,8 +143,8 @@ public class DataSourceLoader implements InitializingBean {
         widget = widgetRepository.save(widget);
         // widget2 = widgetRepository.save(widget2);
 
-        secPop.grantDefaultAccess(widget);
-        secPop.grantDefaultAccess(loc);
+        metaService.grantDefaultAccess(widget);
+        metaService.grantDefaultAccess(loc);
 //        AclObjectIdentity widgetAdminIdentity = new AclObjectIdentity(
 //                widgetClass,
 //                String.valueOf(widget.getId()),

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class SecurityPopulator {
+public class SecurityMetaService {
 
     @Autowired
     private AclService aclService;
