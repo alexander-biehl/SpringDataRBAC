@@ -10,8 +10,8 @@ import jakarta.persistence.*;
 public class AclSid {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private boolean principal;
@@ -21,7 +21,7 @@ public class AclSid {
 
     public AclSid() {}
 
-    public AclSid(long id, boolean principal, String sid) {
+    public AclSid(Long id, boolean principal, String sid) {
         this.id = id;
         this.principal = principal;
         this.sid = sid;
@@ -32,11 +32,11 @@ public class AclSid {
         this.sid = sid;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

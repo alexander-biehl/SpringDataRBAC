@@ -1,9 +1,6 @@
 package com.alexbiehl.demo;
 
-import com.alexbiehl.demo.model.Location;
-import com.alexbiehl.demo.model.Role;
-import com.alexbiehl.demo.model.User;
-import com.alexbiehl.demo.model.Widget;
+import com.alexbiehl.demo.model.*;
 import com.alexbiehl.demo.model.security.AclClass;
 import com.alexbiehl.demo.model.security.AclEntry;
 import com.alexbiehl.demo.model.security.AclObjectIdentity;
@@ -13,6 +10,8 @@ import com.alexbiehl.demo.repository.security.AclClassRepository;
 import com.alexbiehl.demo.repository.security.AclEntryRepository;
 import com.alexbiehl.demo.repository.security.AclObjectIdentityRepository;
 import com.alexbiehl.demo.repository.security.AclSidRepository;
+import com.alexbiehl.demo.service.GrantService;
+import com.alexbiehl.demo.service.SecurityPopulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.swing.plaf.basic.BasicEditorPaneUI;
 import java.util.Arrays;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
+@Transactional
 public class DataSourceLoader implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceLoader.class);
@@ -49,6 +50,9 @@ public class DataSourceLoader implements InitializingBean {
     private GrantRepository grantRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private GrantService grantService;
 
     @Autowired
     private LocationRepository locationRepository;
@@ -66,6 +70,9 @@ public class DataSourceLoader implements InitializingBean {
     private AclObjectIdentityRepository aclObjectIdentityRepository;
     @Autowired
     private AclSidRepository aclSidRepository;
+
+    @Autowired
+    private SecurityPopulator secPop;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -92,6 +99,17 @@ public class DataSourceLoader implements InitializingBean {
         // Role adminRole = new Role("ROLE_ADMIN");
         adminRole = roleRepository.save(adminRole);
 
+        // Permission Grants
+        Grant userGrant = grantService.readAccess();
+        userGrant.setRole(userRole);
+        Grant managerGrant = grantService.writeAccess();
+        managerGrant.setRole(managerRole);
+        Grant adminGrant = grantService.allAccess();
+        adminGrant.setRole(adminRole);
+
+        grantService.createOrUpdateGrant(userGrant);
+        grantService.createOrUpdateGrant(managerGrant);
+        grantService.createOrUpdateGrant(adminGrant);
 
         user.setRoles(Collections.singleton(userRole));
         manager.setRoles(Collections.singleton(managerRole));
@@ -102,21 +120,21 @@ public class DataSourceLoader implements InitializingBean {
         admin = userRepository.save(admin);
 
         // create Security IDentifiers (ACL SID)
-        AclSid userRoleSid = new AclSid(false, userRole.getName());
-        AclSid managerRoleSid = new AclSid(false, managerRole.getName());
-        AclSid adminRoleSid = new AclSid(false, adminRole.getName());
-
-        userRoleSid = aclSidRepository.save(userRoleSid);
-        managerRoleSid = aclSidRepository.save(managerRoleSid);
-        adminRoleSid = aclSidRepository.save(adminRoleSid);
-
-        AclClass baseClass = new AclClass("com.alexbiehl.demo.model.DBItemBase");
-        AclClass widgetClass = new AclClass("com.alexbiehl.demo.model.Widget");
-        AclClass locationClass = new AclClass("com.alexbiehl.demo.model.Location");
-
-        baseClass = aclClassRepository.save(baseClass);
-        widgetClass = aclClassRepository.save(widgetClass);
-        locationClass = aclClassRepository.save(locationClass);
+//        AclSid userRoleSid = new AclSid(false, userRole.getName());
+//        AclSid managerRoleSid = new AclSid(false, managerRole.getName());
+//        AclSid adminRoleSid = new AclSid(false, adminRole.getName());
+//
+//        userRoleSid = aclSidRepository.save(userRoleSid);
+//        managerRoleSid = aclSidRepository.save(managerRoleSid);
+//        adminRoleSid = aclSidRepository.save(adminRoleSid);
+//
+//        AclClass baseClass = new AclClass(DBItemBase.class.toString());
+//        AclClass widgetClass = new AclClass(Widget.class.toString());
+//        AclClass locationClass = new AclClass(Location.class.toString());
+//
+//        baseClass = aclClassRepository.save(baseClass);
+//        widgetClass = aclClassRepository.save(widgetClass);
+//        locationClass = aclClassRepository.save(locationClass);
 
         Widget widget = new Widget(-1L, "testWidget", "desc");
         // Widget widget2 = new Widget(2L, "widget2", "desc2");
@@ -129,101 +147,88 @@ public class DataSourceLoader implements InitializingBean {
         widget = widgetRepository.save(widget);
         // widget2 = widgetRepository.save(widget2);
 
-        // Create ACL Object Identities
-//        AclObjectIdentity widgetParentIdentity = new AclObjectIdentity(
-//                baseClass,
+        secPop.grantDefaultAccess(widget);
+        secPop.grantDefaultAccess(loc);
+//        AclObjectIdentity widgetAdminIdentity = new AclObjectIdentity(
+//                widgetClass,
 //                String.valueOf(widget.getId()),
+//                // widgetParentIdentity,
 //                null,
-//                userRoleSid,
-//                true
-//        );
-//        AclObjectIdentity locParentIdentity = new AclObjectIdentity(
-//                baseClass,
+//                adminRoleSid,
+//                true);
+//        AclObjectIdentity locationAdminIdentity = new AclObjectIdentity(
+//                locationClass,
 //                String.valueOf(loc.getId()),
+//                // locParentIdentity,
 //                null,
-//                userRoleSid,
+//                adminRoleSid,
 //                true
 //        );
-        AclObjectIdentity widgetAdminIdentity = new AclObjectIdentity(
-                widgetClass,
-                String.valueOf(widget.getId()),
-                // widgetParentIdentity,
-                null,
-                adminRoleSid,
-                true);
-        AclObjectIdentity locationAdminIdentity = new AclObjectIdentity(
-                locationClass,
-                String.valueOf(loc.getId()),
-                // locParentIdentity,
-                null,
-                adminRoleSid,
-                true
-        );
 
-        // aclObjectIdentityRepository.saveAll(List.of(widgetParentIdentity, locParentIdentity));
-        widgetAdminIdentity = aclObjectIdentityRepository.save(widgetAdminIdentity);
-        locationAdminIdentity = aclObjectIdentityRepository.save(locationAdminIdentity);
+
+//        widgetAdminIdentity = aclObjectIdentityRepository.save(widgetAdminIdentity);
+//        locationAdminIdentity = aclObjectIdentityRepository.save(locationAdminIdentity);
 
         // Create the ACL entries for each domain object, Sid, and permission
         // user role has read access for now, admin will have all access
-        AtomicInteger widgetOrder = new AtomicInteger(0);
-        AtomicInteger locOrder = new AtomicInteger(0);
-
-        List<Integer> pList = Arrays.asList(
-                BasePermission.READ.getMask(),
-                BasePermission.CREATE.getMask(),
-                BasePermission.WRITE.getMask(),
-                BasePermission.DELETE.getMask(),
-                BasePermission.ADMINISTRATION.getMask());
-
-        // user role permissions
-        persistPermissions(
-                widgetAdminIdentity,
-                widgetOrder,
-                userRoleSid,
-                pList,
-                List.of(true, false, false, false, false)
-        );
-        persistPermissions(
-                locationAdminIdentity,
-                locOrder,
-                userRoleSid,
-                pList,
-                List.of(true, false, false, false, false)
-        );
-
-        // manager role permissions
-        persistPermissions(
-                widgetAdminIdentity,
-                widgetOrder,
-                managerRoleSid,
-                pList,
-                List.of(true, true, true, false, false)
-        );
-        persistPermissions(
-                locationAdminIdentity,
-                locOrder,
-                managerRoleSid,
-                pList,
-                List.of(true, true, true, false, false)
-        );
-
-        // admin acl entries
-
-        persistPermissions(
-                widgetAdminIdentity,
-                widgetOrder,
-                adminRoleSid,
-                pList,
-                List.of(true, true, true, true, true)
-        );
-        persistPermissions(
-                locationAdminIdentity,
-                locOrder,
-                adminRoleSid,
-                pList,
-                List.of(true, true, true, true, true)
-        );
+//        AtomicInteger widgetOrder = new AtomicInteger(0);
+//        AtomicInteger locOrder = new AtomicInteger(0);
+//
+//        List<Integer> pList = Arrays.asList(
+//                BasePermission.READ.getMask(),
+//                BasePermission.CREATE.getMask(),
+//                BasePermission.WRITE.getMask(),
+//                BasePermission.DELETE.getMask(),
+//                BasePermission.ADMINISTRATION.getMask());
+//
+//        // user role permissions
+//        persistPermissions(
+//                widgetAdminIdentity,
+//                widgetOrder,
+//                userRoleSid,
+//                pList,
+//                List.of(true, false, false, false, false)
+//        );
+//        persistPermissions(
+//                locationAdminIdentity,
+//                locOrder,
+//                userRoleSid,
+//                pList,
+//                List.of(true, false, false, false, false)
+//        );
+//
+//        // manager role permissions
+//        persistPermissions(
+//                widgetAdminIdentity,
+//                widgetOrder,
+//                managerRoleSid,
+//                pList,
+//                List.of(true, true, true, false, false)
+//        );
+//        persistPermissions(
+//                locationAdminIdentity,
+//                locOrder,
+//                managerRoleSid,
+//                pList,
+//                List.of(true, true, true, false, false)
+//        );
+//
+//        // admin acl entries
+//
+//        persistPermissions(
+//                widgetAdminIdentity,
+//                widgetOrder,
+//                adminRoleSid,
+//                pList,
+//                List.of(true, true, true, true, true)
+//        );
+//        persistPermissions(
+//                locationAdminIdentity,
+//                locOrder,
+//                adminRoleSid,
+//                pList,
+//                List.of(true, true, true, true, true)
+//        );
 
         LOGGER.info("DB Load Complete");
         SecurityContextHolder.clearContext();

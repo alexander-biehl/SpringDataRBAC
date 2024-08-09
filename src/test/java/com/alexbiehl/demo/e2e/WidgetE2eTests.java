@@ -6,6 +6,7 @@ import com.alexbiehl.demo.model.Widget;
 import com.alexbiehl.demo.repository.UserRepository;
 import com.alexbiehl.demo.repository.WidgetRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.security.acls.model.AclCache;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,14 @@ public class WidgetE2eTests {
     private UserRepository userRepository;
     @LocalServerPort
     private int port;
+
+    @Autowired
+    private AclCache aclCache;
+
+    @AfterEach
+    public void tearDown() {
+        aclCache.clearCache();
+    }
 
 
     @Test

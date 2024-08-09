@@ -5,11 +5,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import java.util.Objects;
-
 @Entity
 @Table(name = "grants")
-public class Grant extends DBItemBase{
+public class Grant extends DBItemBase {
 
     @OneToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
@@ -81,4 +79,21 @@ public class Grant extends DBItemBase{
         this.admin = admin;
     }
 
+    public Boolean[] getGrantList() {
+        return new Boolean[]{
+                isCreate(),
+                isRead(),
+                isWrite(),
+                isDelete(),
+                isAdmin()
+        };
+    }
+
+    public void updateGrants(Boolean[] grants) {
+        setCreate(grants[0]);
+        setRead(grants[1]);
+        setWrite(grants[2]);
+        setDelete(grants[3]);
+        setAdmin(grants[4]);
+    }
 }
