@@ -52,9 +52,6 @@ public class WebSecurityConfig {
     @Autowired
     private RoleService roleService;
 
-    @Autowired
-    private DataSource dataSource;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -92,62 +89,5 @@ public class WebSecurityConfig {
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
-    }
-
-    @Bean
-    public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.withDefaultRolePrefix()
-                .role("ADMIN").implies("MANAGER")
-                .role("MANAGER").implies("USER")
-                .build();
-//        RoleHierarchyImpl.Builder builder = RoleHierarchyImpl.withDefaultRolePrefix();
-//        Map<Role, Set<Role>> roleMap = roleService.getRoleHierarchy();
-//        roleMap.forEach((key, value) -> builder
-//                .role(key.getName())
-//                .implies(value
-//                        .stream()
-//                        .map(Role::getName)
-//                        .collect(Collectors.joining())));
-//        return builder.build();
-    }
-
-    // ACL-related beans
-
-    @Bean
-    public JdbcMutableAclService mutableAclService() {
-        return new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
-    }
-
-    @Bean
-    public SpringCacheBasedAclCache aclCache() {
-        final ConcurrentMapCache aclCache = new ConcurrentMapCache("acl_cache");
-        return new SpringCacheBasedAclCache(aclCache, permissionStrategy(), aclAuthStrategy());
-    }
-
-    @Bean
-    public PermissionGrantingStrategy permissionStrategy() {
-        return new DefaultPermissionGrantingStrategy(new ConsoleAuditLogger());
-    }
-
-    @Bean
-    public AclAuthorizationStrategy aclAuthStrategy() {
-        // This means that any user with the ROLE_ADMIN role will be able to make changes
-        // to ACLs
-        return new AclAuthorizationStrategyImpl(new SimpleGrantedAuthority("ROLE_ADMIN"));
-    }
-
-    @Bean
-    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
-        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
-        AclPermissionEvaluator permissionEvaluator = new AclPermissionEvaluator(mutableAclService());
-        expressionHandler.setRoleHierarchy(roleHierarchy());
-        expressionHandler.setPermissionEvaluator(permissionEvaluator);
-        expressionHandler.setPermissionCacheOptimizer(new AclPermissionCacheOptimizer(mutableAclService()));
-        return expressionHandler;
-    }
-
-    @Bean
-    public LookupStrategy lookupStrategy() {
-        return new BasicLookupStrategy(dataSource, aclCache(), aclAuthStrategy(), new ConsoleAuditLogger());
     }
 }

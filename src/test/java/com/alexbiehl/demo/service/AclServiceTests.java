@@ -6,32 +6,37 @@ import com.alexbiehl.demo.model.security.AclClass;
 import com.alexbiehl.demo.model.security.AclObjectIdentity;
 import com.alexbiehl.demo.model.security.AclSid;
 import com.alexbiehl.demo.repository.LocationRepository;
+import com.alexbiehl.demo.repository.UserRepository;
 import com.alexbiehl.demo.repository.WidgetRepository;
 import com.alexbiehl.demo.repository.security.AclClassRepository;
 import com.alexbiehl.demo.repository.security.AclEntryRepository;
 import com.alexbiehl.demo.repository.security.AclObjectIdentityRepository;
 import com.alexbiehl.demo.repository.security.AclSidRepository;
+import com.alexbiehl.demo.security.AclContext;
 import com.alexbiehl.demo.security.UserDetailsServiceImpl;
 import com.alexbiehl.demo.security.WebSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@DataJpaTest
+
+@SpringBootTest
 @EnableAutoConfiguration
-@ContextConfiguration(classes = {
-        AclService.class,
-        WebSecurityConfig.class,
-        UserDetailsServiceImpl.class
-})
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class AclServiceTests {
 
     private static Widget testWidget;
