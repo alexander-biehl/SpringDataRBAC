@@ -92,10 +92,9 @@ public class AclServiceTests {
     }
 
     @Test
-    // @WithMockUser(roles = {"ADMIN"})
-    public void testGrantPermissionsToSid() {
+    public void testGrantWidgetPermissionsToSid() {
         aclService.grantPermissionsToSid(
-                testWidget.getClass().toString(),
+                testWidget.getClass().getName(),
                 testWidget.getId(),
                 "ROLE_USER",
                 aclService.getPermissions(),
@@ -104,7 +103,59 @@ public class AclServiceTests {
 
         AclClass clazz = aclClassRepository.findAll().iterator().next();
         assertNotNull(clazz);
-        assertEquals(testWidget.getClass().toString(), clazz.getClazz());
+        assertEquals(testWidget.getClass().getName(), clazz.getClazz());
+
+        Iterable<AclSid> sids = sidRepository.findAll();
+        log.info("SIDS: {}", sids);
+        boolean foundUserSid = false;
+        AclSid sid = null;
+        for (AclSid id : sids) {
+            if (id.getSid().equals("ROLE_USER")) {
+                foundUserSid = true;
+                sid = id;
+            }
+        }
+        assertTrue(foundUserSid, "'ROLE_USER' was not found in the list of SIDs.");
+
+        Iterable<AclObjectIdentity> oids = objectRepository.findAll();
+        List<AclObjectIdentity> oidList = new ArrayList<>();
+        oids.forEach(oidList::add);
+        log.info("OID List: {}", oidList);
+
+        AclObjectIdentity oid = oids.iterator().next();
+        assertEquals(clazz, oid.getObjectIdClass());
+        assertNotNull(sid);
+        // AclObjectIdentity SID will always be the name of the logged in user/authentication
+        AclSid adminId = sidRepository.findBySid("admin");
+        assertEquals(String.valueOf(adminId.getId()), oid.getObjectIdIdentity());
+
+        Iterable<AclEntry> entries = aclEntryRepository.findAll();
+        List<AclEntry> entryList = new ArrayList<>();
+        entries.forEach(entryList::add);
+        log.info("ACL Entries: {}", entries);
+
+        assertEquals(aclService.getPermissions().length, entryList.size());
+        for (AclEntry entry : entryList) {
+            assertEquals(oid, entry.getAclObjectIdentity());
+            assertEquals("ROLE_USER", entry.getAclSid().getSid());
+            assertFalse(entry.getAclSid().isPrincipal());
+            assertTrue(entry.isGranting());
+        }
+    }
+
+    @Test
+    public void testGrantLocationPermissionsToSid() {
+        aclService.grantPermissionsToSid(
+                testLoc.getClass().getName(),
+                testLoc.getId(),
+                "ROLE_USER",
+                aclService.getPermissions(),
+                new Boolean[]{true, true, true, true, true}
+        );
+
+        AclClass clazz = aclClassRepository.findAll().iterator().next();
+        assertNotNull(clazz);
+        assertEquals(testLoc.getClass().getName(), clazz.getClazz());
 
         Iterable<AclSid> sids = sidRepository.findAll();
         log.info("SIDS: {}", sids);
