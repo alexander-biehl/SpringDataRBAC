@@ -54,4 +54,12 @@ public class AclClass {
         result = 31 * result + getClazz().hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "AclClass{" +
+                "id=" + id +
+                ", clazz='" + clazz + '\'' +
+                '}';
+    }
 }

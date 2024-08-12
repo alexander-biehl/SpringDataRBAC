@@ -71,4 +71,13 @@ public class AclSid {
         result = 31 * result + getSid().hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "AclSid{" +
+                "id=" + id +
+                ", principal=" + principal +
+                ", sid='" + sid + '\'' +
+                '}';
+    }
 }

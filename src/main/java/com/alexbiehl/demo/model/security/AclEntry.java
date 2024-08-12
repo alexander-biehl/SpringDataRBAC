@@ -145,4 +145,16 @@ public class AclEntry {
         result = 31 * result + Boolean.hashCode(isAuditFailure());
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "AclEntry{" +
+                "id=" + id +
+                ", aclObjectIdentity=" + aclObjectIdentity +
+                ", aceOrder=" + aceOrder +
+                ", aclSid=" + aclSid +
+                ", mask=" + mask +
+                ", granting=" + granting +
+                '}';
+    }
 }

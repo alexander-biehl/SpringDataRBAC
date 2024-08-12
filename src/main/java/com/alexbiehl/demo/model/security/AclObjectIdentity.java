@@ -119,4 +119,16 @@ public class AclObjectIdentity {
         result = 31 * result + Boolean.hashCode(isEntriesInheriting());
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "AclObjectIdentity{" +
+                "id=" + id +
+                ", objectIdClass=" + objectIdClass +
+                ", objectIdIdentity='" + objectIdIdentity + '\'' +
+                ", parentObject=" + parentObject +
+                ", ownerSid=" + ownerSid +
+                ", entriesInheriting=" + entriesInheriting +
+                '}';
+    }
 }
