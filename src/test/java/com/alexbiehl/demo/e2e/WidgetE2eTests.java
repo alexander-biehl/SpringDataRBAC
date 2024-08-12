@@ -102,14 +102,6 @@ public class WidgetE2eTests {
     @Test
     public void givenWidget_userUpdate_andFail() throws Exception{
 
-        class DBFunction implements Function<Tuple<Widget, User>> {
-            @Override
-            public Tuple<Widget, User> call() {
-                Widget testWidget = widgetRepository.findById(TestConstants.TEST_WIDGET_ID);
-                User user = userRepository.findByUsername("user");
-                return new Tuple<>(testWidget, user);
-            }
-        }
         Tuple<Widget, User> result = runWithSecurity(new DBFunction());
         Widget testWidget = result.getKey();
         User user = result.getValue();
@@ -129,8 +121,28 @@ public class WidgetE2eTests {
     }
 
     @Test
-    public void givenWidget_userDelete_andFail() {
+    public void givenWidget_userDelete_andFail() throws Exception {
+        Tuple<Widget, User> result = runWithSecurity(new DBFunction());
+        Widget testWidget = result.getKey();
+        User user = result.getValue();
 
+        ResponseEntity<String> response = this.restTemplate.exchange(
+                RequestEntity.delete(TestUtils.uri(this.restTemplate, "/widgets/" + testWidget.getId()))
+                        .headers(TestUtils.headers(user.getUsername()))
+                        .build(),
+                String.class
+        );
+        log.info("response: {}", response.toString());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    private class DBFunction implements Function<Tuple<Widget,User>> {
+        @Override
+        public Tuple<Widget, User> call() {
+            Widget testWidget = widgetRepository.findById(TestConstants.TEST_WIDGET_ID);
+            User user = userRepository.findByUsername("user");
+            return new Tuple<>(testWidget, user);
+        }
     }
 
     private interface Function<V> {
