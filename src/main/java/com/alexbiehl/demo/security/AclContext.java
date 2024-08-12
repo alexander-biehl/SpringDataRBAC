@@ -1,5 +1,6 @@
 package com.alexbiehl.demo.security;
 
+import com.alexbiehl.demo.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,8 @@ public class AclContext {
 
     @Autowired
     private DataSource dataSource;
+//    @Autowired
+//    private RoleService roleService;
 
     @Bean
     public RoleHierarchy roleHierarchy() {
