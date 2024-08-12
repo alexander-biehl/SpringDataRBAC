@@ -3,11 +3,19 @@ package com.alexbiehl.demo.e2e;
 import com.alexbiehl.demo.TestUtils;
 import com.alexbiehl.demo.model.User;
 import com.alexbiehl.demo.model.Widget;
+import com.alexbiehl.demo.model.security.AclClass;
+import com.alexbiehl.demo.model.security.AclEntry;
+import com.alexbiehl.demo.model.security.AclObjectIdentity;
 import com.alexbiehl.demo.repository.UserRepository;
 import com.alexbiehl.demo.repository.WidgetRepository;
+import com.alexbiehl.demo.repository.security.AclEntryRepository;
+import com.alexbiehl.demo.repository.security.AclObjectIdentityRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +26,10 @@ import org.springframework.security.acls.model.AclCache;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -26,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Transactional
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class WidgetE2eTests {
+
+    private static final Logger log = LoggerFactory.getLogger(WidgetE2eTests.class);
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -50,7 +64,6 @@ public class WidgetE2eTests {
     @Test
     public void adminCreateWidget_userRead_andOk() {
         User admin = userRepository.findByUsername("admin");
-        //String content = "{\"shortDescription\":\"test widget\",\"description\":\"test description\"}";
         Widget content = new Widget("test widget", "test description");
 
         HttpHeaders headers = TestUtils.headers(admin.getUsername());
@@ -62,6 +75,8 @@ public class WidgetE2eTests {
                 Widget.class
         );
         Widget createdWidget = response.getBody();
+        String newLoc = response.getHeaders().getLocation().getPath();
+        String resourceId = newLoc.substring(newLoc.length() - 1);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(createdWidget);
@@ -71,7 +86,7 @@ public class WidgetE2eTests {
         RequestEntity<Widget> getEntity = new RequestEntity<>(
                 TestUtils.headers(user.getUsername()),
                 HttpMethod.GET,
-                TestUtils.uri(this.restTemplate, "/widgets/" + createdWidget.getId())
+                TestUtils.uri(this.restTemplate, "/widgets/" + resourceId)
         );
         ResponseEntity<Widget> getResponse = this.restTemplate.exchange(
                 getEntity,

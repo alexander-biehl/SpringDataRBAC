@@ -61,6 +61,8 @@ public class LocationE2eTests {
         );
 
         Location createdLoc = response.getBody();
+        String newLoc = response.getHeaders().getLocation().getPath();
+        String resourceId = newLoc.substring(newLoc.length() - 1);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(createdLoc);
@@ -70,7 +72,7 @@ public class LocationE2eTests {
         RequestEntity<Location> getEntity = new RequestEntity<>(
                 TestUtils.headers(user.getUsername()),
                 HttpMethod.GET,
-                TestUtils.uri(this.restTemplate, "/locations/" + createdLoc.getId())
+                TestUtils.uri(this.restTemplate, "/locations/" + resourceId)
         );
         ResponseEntity<Location> getResponse = this.restTemplate.exchange(
                 getEntity,
