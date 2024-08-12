@@ -31,6 +31,10 @@ public class SecurityMetaService {
         });
     }
 
+    public <T extends DBItemBase> void removeDefaultAccess(T element) {
+        aclService.deleteAcl(element.getClass().getName(), element.getId());
+    }
+
     @Transactional
     public <T extends DBItemBase> void grantAccess(Role role, T element, Permission[] permissions, Boolean[] grants) {
         Grant existingGrant = grantService.getOrCreateGrantForRole(role);

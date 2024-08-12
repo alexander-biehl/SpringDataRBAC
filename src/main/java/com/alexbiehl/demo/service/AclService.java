@@ -85,6 +85,10 @@ public class AclService {
         return (AuditableAcl) aclService.updateAcl(acl);
     }
 
+    public void deleteAcl(String type, Serializable id) {
+        aclService.deleteAcl(new ObjectIdentityImpl(type, id), true);
+    }
+
     private AuditableAcl removePermissions(String type, Serializable id, Sid sid, Permission[] permissions) {
         AuditableAcl acl = getAcl(type, id);
         int index = 0;

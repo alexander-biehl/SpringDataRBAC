@@ -2,6 +2,7 @@ package com.alexbiehl.demo.repository.eventhandler;
 
 import com.alexbiehl.demo.model.Widget;
 import com.alexbiehl.demo.service.AclService;
+import com.alexbiehl.demo.service.SecurityMetaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import java.util.Date;
 public class WidgetEventHandler {
 
     @Autowired
-    private AclService aclService;
+    private SecurityMetaService secService;
 
     private static final Logger log = LoggerFactory.getLogger(WidgetEventHandler.class);
 
@@ -32,10 +33,12 @@ public class WidgetEventHandler {
     @HandleAfterCreate
     public void handleAfterCreate(Widget w) {
         log.info("@AfterCreate for Widget: {}", w.toString());
+        secService.grantDefaultAccess(w);
     }
 
     @HandleAfterDelete
     public void handleAfterDelete(Widget w) {
         log.info("@AfterDelete for Widget: {}", w.toString());
+        secService.removeDefaultAccess(w);
     }
 }
