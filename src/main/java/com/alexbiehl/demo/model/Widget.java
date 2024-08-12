@@ -1,5 +1,6 @@
 package com.alexbiehl.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -51,10 +52,12 @@ public class Widget extends DBItemBase {
         this.description = description;
     }
 
+    @JsonIgnore
     public Set<Location> getAvailableLocations() {
         return availableLocations;
     }
 
+    @JsonIgnore
     public void setAvailableLocations(Set<Location> availableLocations) {
         this.availableLocations = availableLocations;
     }

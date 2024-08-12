@@ -1,17 +1,12 @@
 package com.alexbiehl.demo.e2e;
 
+import com.alexbiehl.demo.TestConstants;
 import com.alexbiehl.demo.TestUtils;
 import com.alexbiehl.demo.model.User;
 import com.alexbiehl.demo.model.Widget;
-import com.alexbiehl.demo.model.security.AclClass;
-import com.alexbiehl.demo.model.security.AclEntry;
-import com.alexbiehl.demo.model.security.AclObjectIdentity;
 import com.alexbiehl.demo.repository.UserRepository;
 import com.alexbiehl.demo.repository.WidgetRepository;
-import com.alexbiehl.demo.repository.security.AclEntryRepository;
-import com.alexbiehl.demo.repository.security.AclObjectIdentityRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.checkerframework.checker.regex.qual.Regex;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,12 +18,16 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.security.acls.model.AclCache;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -98,5 +97,67 @@ public class WidgetE2eTests {
         assertEquals(createdWidget.getId(), getResponse.getBody().getId());
         assertEquals(createdWidget.getShortDescription(), getResponse.getBody().getShortDescription());
         assertEquals(createdWidget.getDescription(), getResponse.getBody().getDescription());
+    }
+
+    @Test
+    public void givenWidget_userUpdate_andFail() throws Exception{
+
+        class DBFunction implements Function<Tuple<Widget, User>> {
+            @Override
+            public Tuple<Widget, User> call() {
+                Widget testWidget = widgetRepository.findById(TestConstants.TEST_WIDGET_ID);
+                User user = userRepository.findByUsername("user");
+                return new Tuple<>(testWidget, user);
+            }
+        }
+        Tuple<Widget, User> result = runWithSecurity(new DBFunction());
+        Widget testWidget = result.getKey();
+        User user = result.getValue();
+
+        testWidget.setDescription("updated description");
+
+        ResponseEntity<String> response = this.restTemplate.exchange(
+                RequestEntity.put(
+                                TestUtils.uri(this.restTemplate, "/widgets/" + testWidget.getId())
+                        )
+                        .headers(TestUtils.headers(user.getUsername()))
+                        .body(testWidget),
+                String.class
+        );
+        log.info("response: {}", response.toString());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    public void givenWidget_userDelete_andFail() {
+
+    }
+
+    private interface Function<V> {
+        V call();
+    }
+
+    private <K,V> Tuple<K, V> runWithSecurity(Function<Tuple<K,V>> function) throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "admin",
+                        "password",
+                        Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                )
+        );
+        Tuple<K, V> result = function.call();
+        SecurityContextHolder.getContext();
+        return result;
+    }
+
+    private class Tuple<K, V> extends AbstractMap.SimpleEntry<K, V> {
+
+        public Tuple(K key, V value) {
+            super(key, value);
+        }
+
+        public Tuple(Map.Entry entry) {
+            super(entry);
+        }
     }
 }
