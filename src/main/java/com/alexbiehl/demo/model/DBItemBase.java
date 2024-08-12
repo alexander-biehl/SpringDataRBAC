@@ -38,39 +38,39 @@ public abstract class DBItemBase {
         this.id = id;
     }
 
-    public long getId() {
+    protected long getId() {
         return id;
     }
 
-    public String getCreatedBy() {
+    protected String getCreatedBy() {
         return createdBy;
     }
 
-    public String getUpdatedBy() {
+    protected String getUpdatedBy() {
         return updatedBy;
     }
 
-    public Timestamp getCreatedOn() {
+    protected Timestamp getCreatedOn() {
         return createdOn;
     }
 
-    public Timestamp getUpdatedOn() {
+    protected Timestamp getUpdatedOn() {
         return updatedOn;
     }
 
-    public void setCreatedBy(String createdBy) {
+    private void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
 
-    public void setUpdatedBy(String updatedBy) {
+    private void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
     }
 
-    public void setCreatedOn(Timestamp createdOn) {
+    private void setCreatedOn(Timestamp createdOn) {
         this.createdOn = createdOn;
     }
 
-    public void setUpdatedOn(Timestamp updatedOn) {
+    private void setUpdatedOn(Timestamp updatedOn) {
         this.updatedOn = updatedOn;
     }
 
