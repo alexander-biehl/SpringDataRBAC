@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -102,7 +101,7 @@ public class WidgetE2eTests {
     @Test
     public void givenWidget_userUpdate_andFail() throws Exception{
 
-        Tuple<Widget, User> result = runWithSecurity(new DBFunction());
+        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction("user"));
         Widget testWidget = result.getKey();
         User user = result.getValue();
 
@@ -122,7 +121,7 @@ public class WidgetE2eTests {
 
     @Test
     public void givenWidget_userDelete_andFail() throws Exception {
-        Tuple<Widget, User> result = runWithSecurity(new DBFunction());
+        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction("user"));
         Widget testWidget = result.getKey();
         User user = result.getValue();
 
@@ -136,11 +135,18 @@ public class WidgetE2eTests {
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
-    private class DBFunction implements Function<Tuple<Widget,User>> {
+    private class GetUserAndWidgetFunction implements Function<Tuple<Widget,User>> {
+
+        private final String username;
+
+        GetUserAndWidgetFunction(String username) {
+            this.username = username;
+        }
+
         @Override
         public Tuple<Widget, User> call() {
             Widget testWidget = widgetRepository.findById(TestConstants.TEST_WIDGET_ID);
-            User user = userRepository.findByUsername("user");
+            User user = userRepository.findByUsername(this.username);
             return new Tuple<>(testWidget, user);
         }
     }
