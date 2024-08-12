@@ -4,6 +4,8 @@ import com.alexbiehl.demo.TestConstants;
 import com.alexbiehl.demo.model.Widget;
 import com.alexbiehl.demo.repository.WidgetRepository;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class WidgetIntegrationTests {
 
+
+    private static final Logger log = LoggerFactory.getLogger(WidgetIntegrationTests.class);
 
     @Autowired
     private WidgetRepository widgetRepository;

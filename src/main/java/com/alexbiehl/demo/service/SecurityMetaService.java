@@ -27,7 +27,7 @@ public class SecurityMetaService {
         Map<Role, List<Role>> sortedHierarchy = roleService.getSortedParentHierarchy();
 
         sortedHierarchy.forEach((role, roleList) -> {
-            roleList.forEach(this::getAndSaveGrants);
+            roleList.forEach((r) -> getAndSaveGrants(r, element));
         });
     }
 
@@ -38,7 +38,7 @@ public class SecurityMetaService {
 
         grantService.createOrUpdateGrant(existingGrant);
         aclService.grantPermissionsToSid(
-                element.getClass().toString(),
+                element.getClass().getName(),
                 element.getId(),
                 role.getName(),
                 permissions,
@@ -51,7 +51,7 @@ public class SecurityMetaService {
                                                    Boolean[] grants) {
         Grant adminGrant = grantService.adminAccess();
         aclService.grantPermissionsToPrincipal(
-                element.getClass().toString(),
+                element.getClass().getName(),
                 element.getId(),
                 userDetails.getUsername(),
                 permissions,
@@ -60,11 +60,11 @@ public class SecurityMetaService {
     }
 
     @Transactional
-    private void getAndSaveGrants(Role role) {
+    private <T extends DBItemBase> void getAndSaveGrants(Role role, T element) {
         Grant grant = grantService.getOrCreateGrantForRole(role);
         aclService.grantPermissionsToSid(
-                role.getClass().toString(),
-                role.getId(),
+                element.getClass().getName(),
+                element.getId(),
                 role.getName(),
                 aclService.getPermissions(),
                 grant.getGrantList()
