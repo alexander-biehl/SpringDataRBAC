@@ -9,6 +9,7 @@ import com.alexbiehl.demo.repository.WidgetRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +120,8 @@ public class WidgetE2eTests {
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
-    @Test
+    @ParamterizedTest
+    @ValueSource
     public void givenWidget_userDelete_andFail() throws Exception {
         Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction("user"));
         Widget testWidget = result.getKey();
@@ -133,6 +135,11 @@ public class WidgetE2eTests {
         );
         log.info("response: {}", response.toString());
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    public void givenManagerAndWidget_update_andOK() {
+
     }
 
     private class GetUserAndWidgetFunction implements Function<Tuple<Widget,User>> {
