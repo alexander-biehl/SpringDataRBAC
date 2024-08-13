@@ -9,6 +9,9 @@ import com.alexbiehl.demo.repository.WidgetRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -99,31 +103,45 @@ public class WidgetE2eTests {
         assertEquals(createdWidget.getDescription(), getResponse.getBody().getDescription());
     }
 
-    @Test
-    public void givenWidget_userUpdate_andFail() throws Exception{
+    private static Stream<Arguments> provideUsersAndStatusForRead() {
+        return Stream.of(
+                Arguments.of("user", HttpStatus.OK),
+                Arguments.of("manager", HttpStatus.OK),
+                Arguments.of("admin", HttpStatus.OK)
+        );
+    }
 
-        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction("user"));
+    @ParameterizedTest
+    @MethodSource("provideUsersAndStatusForRead")
+    public void givenUserAndWidget_read_andOk(String username, HttpStatus status) throws Exception {
+        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction(username));
         Widget testWidget = result.getKey();
         User user = result.getValue();
 
-        testWidget.setDescription("updated description");
-
         ResponseEntity<String> response = this.restTemplate.exchange(
-                RequestEntity.put(
-                                TestUtils.uri(this.restTemplate, "/widgets/" + testWidget.getId())
-                        )
-                        .headers(TestUtils.headers(user.getUsername()))
-                        .body(testWidget),
+                RequestEntity.get(
+                        TestUtils.uri(this.restTemplate, "/widgets/" + testWidget.getId())
+                )
+                        .headers(TestUtils.headers(username))
+                        .build(),
                 String.class
         );
-        log.info("response: {}", response.toString());
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+
+        assertEquals(status, response.getStatusCode());
     }
 
-    @ParamterizedTest
-    @ValueSource
-    public void givenWidget_userDelete_andFail() throws Exception {
-        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction("user"));
+    private static Stream<Arguments> provideUsersAndStatusForDelete() {
+        return Stream.of(
+                Arguments.of("user", HttpStatus.FORBIDDEN),
+                Arguments.of("manager", HttpStatus.FORBIDDEN),
+                Arguments.of("admin", HttpStatus.OK)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideUsersAndStatusForDelete")
+    public void givenWidget_userDelete_andFail(String username, HttpStatus status) throws Exception {
+        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction(username));
         Widget testWidget = result.getKey();
         User user = result.getValue();
 
@@ -134,12 +152,35 @@ public class WidgetE2eTests {
                 String.class
         );
         log.info("response: {}", response.toString());
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(status, response.getStatusCode());
     }
 
-    @Test
-    public void givenManagerAndWidget_update_andOK() {
+    private static Stream<Arguments> provideUsersAndStatusForUpdate() {
+        return Stream.of(
+                Arguments.of("user", HttpStatus.FORBIDDEN),
+                Arguments.of("manager", HttpStatus.OK),
+                Arguments.of("admin", HttpStatus.OK)
+        );
+    }
 
+    @ParameterizedTest
+    @MethodSource("provideUsersAndStatusForUpdate")
+    public void givenUserAndWidget_update_andOK(String username, HttpStatus status) throws Exception {
+        Tuple<Widget, User> result = runWithSecurity(new GetUserAndWidgetFunction(username));
+        Widget testWidget = result.getKey();
+        testWidget.setDescription("updated description");
+        User user = result.getValue();
+
+        ResponseEntity<String> response = this.restTemplate.exchange(
+                RequestEntity.put(
+                        TestUtils.uri(this.restTemplate, "/widgets/" + testWidget.getId())
+                )
+                        .headers(TestUtils.headers(user.getUsername()))
+                        .body(testWidget),
+                String.class
+        );
+
+        assertEquals(status, response.getStatusCode());
     }
 
     private class GetUserAndWidgetFunction implements Function<Tuple<Widget,User>> {
