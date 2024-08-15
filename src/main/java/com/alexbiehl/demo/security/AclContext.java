@@ -1,5 +1,6 @@
 package com.alexbiehl.demo.security;
 
+import com.alexbiehl.demo.model.Role;
 import com.alexbiehl.demo.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
@@ -19,6 +20,9 @@ import org.springframework.security.acls.model.PermissionGrantingStrategy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.sql.DataSource;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Configuration
 public class AclContext {
@@ -26,24 +30,24 @@ public class AclContext {
 
     @Autowired
     private DataSource dataSource;
-//    @Autowired
-//    private RoleService roleService;
+    @Autowired
+    private RoleService roleService;
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.withDefaultRolePrefix()
-                .role("ADMIN").implies("MANAGER")
-                .role("MANAGER").implies("USER")
-                .build();
-//        RoleHierarchyImpl.Builder builder = RoleHierarchyImpl.withDefaultRolePrefix();
-//        Map<Role, Set<Role>> roleMap = roleService.getRoleHierarchy();
-//        roleMap.forEach((key, value) -> builder
-//                .role(key.getName())
-//                .implies(value
-//                        .stream()
-//                        .map(Role::getName)
-//                        .collect(Collectors.joining())));
-//        return builder.build();
+//        return RoleHierarchyImpl.withDefaultRolePrefix()
+//                .role("ADMIN").implies("MANAGER")
+//                .role("MANAGER").implies("USER")
+//                .build();
+        RoleHierarchyImpl.Builder builder = RoleHierarchyImpl.withDefaultRolePrefix();
+        Map<Role, Set<Role>> roleMap = roleService.getRoleHierarchy();
+        roleMap.forEach((key, value) -> builder
+                .role(key.getName())
+                .implies(value
+                        .stream()
+                        .map(Role::getName)
+                        .collect(Collectors.joining())));
+        return builder.build();
     }
 
     // ACL-related beans
